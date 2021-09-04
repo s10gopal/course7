@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+    stages {
+        stage('Git') {
+            steps {
+                 checkout([
+        $class: 'GitSCM', 
+        branches: [[name: '*/master']], 
+        doGenerateSubmoduleConfigurations: false, 
+        extensions: [[$class: 'CleanCheckout']], 
+        submoduleCfg: [], 
+        userRemoteConfigs: [[credentialsId: '98381268-rrd2-4d32-8f4r-a8didbdw2', url: 'https://github.com/s10gopal/node_hello_app.git']]
+    ])
+            }
+        }
+	stage('Build and Push') {
+            steps {
+                sh "aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 890808813249.dkr.ecr.us-east-1.amazonaws.com"
+                sh "docker build -t nodeapp ."
+                sh "docker tag nodeapp:latest 890808813249.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest"
+                sh "docker push 890808813249.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest"
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh "ssh -i /home/ubuntu/my-key.pub web && docker stop nodeapp && docker run -d 890808813249.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest"
+            }
+        }
+    }
+}
+
