@@ -23,7 +23,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                sh "ssh app && docker stop nodeapp || docker run -d 890808813249.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest"
+                sh "ssh app; docker stop nodeapp; docker run -d 890808813249.dkr.ecr.us-east-1.amazonaws.com/nodeapp:latest"
             }
         }
     }
